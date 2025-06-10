@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  name        String
+  faceId      String   @unique
+  phoneNumber String?
+  role        Role     @default(USER)
+  email       String   @unique
+  password    String
+  absensi     Absensi[]
+  createdAt   DateTime @default(now())
+}
+
+
+model Absensi {
+  id        Int            @id @default(autoincrement())
+  userId    Int
+  user      User           @relation(fields: [userId], references: [id])
+  timestamp DateTime       @default(now())
+  photo     String?                          // Nama file sementara (dihapus rutin)
+  status    AbsensiStatus  @default(HADIR)   // HADIR / GAGAL / TIDAK_TERDETEKSI
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum AbsensiStatus {
+  HADIR
+  GAGAL
+  TIDAK_TERDETEKSI
+}
