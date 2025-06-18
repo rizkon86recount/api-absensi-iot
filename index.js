@@ -42,11 +42,6 @@ app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-// testing
-app.get("/ping", (req, res) => {
-  res.send("pong");
-});
-
 // define port
 const port = 3000;
 
@@ -54,8 +49,3 @@ const port = 3000;
 app.listen(port, () => {
   console.log(`🚀 Server started on http://localhost:${port}`);
 });
-
-// Express.js server
-// app.listen(3000, "0.0.0.0", () => {
-//   console.log("Server listening on all IPs!");
-// });

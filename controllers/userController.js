@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 exports.getAllUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "asc" },
     });
     res.json(users);
   } catch (err) {
@@ -23,10 +23,29 @@ exports.getUserById = async (req, res) => {
 };
 
 // POST /api/users
+// POST /api/users
 exports.createUser = async (req, res) => {
   const { name, faceId, phoneNumber, role, email, password } = req.body;
 
   try {
+    // Cek apakah email sudah ada
+    const existingEmail = await prisma.user.findUnique({ where: { email } });
+    if (existingEmail) {
+      return res.status(400).json({
+        status: "GAGAL",
+        message: "Email sudah terdaftar, gunakan email lain.",
+      });
+    }
+
+    // Cek apakah faceId sudah ada
+    const existingFaceId = await prisma.user.findUnique({ where: { faceId } });
+    if (existingFaceId) {
+      return res.status(400).json({
+        status: "GAGAL",
+        message: "Face ID sudah terdaftar, gunakan face ID lain.",
+      });
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -42,7 +61,6 @@ exports.createUser = async (req, res) => {
       },
     });
 
-    // Hapus password sebelum dikirim ke client
     const { password: _, ...userWithoutPassword } = user;
 
     res.status(201).json({
@@ -50,14 +68,6 @@ exports.createUser = async (req, res) => {
       user: userWithoutPassword,
     });
   } catch (error) {
-    // Validasi duplicate faceId
-    if (error.code === "P2002" && error.meta?.target?.includes("faceId")) {
-      return res.status(400).json({
-        status: "GAGAL",
-        message: "Face ID sudah terdaftar, gunakan face ID lain.",
-      });
-    }
-
     console.error(error);
     return res.status(500).json({
       status: "ERROR",
